@@ -51,7 +51,7 @@
         ]
     },
     {
-        "type": "rossa",
+        "type": "bianca",
         "id": "3",
         "name": "Bianca",
         "toppings": [
@@ -2915,7 +2915,7 @@
         "toppings": [
             "pomodoro",
             "mozzarella",
-            "uova",
+            "uovo",
             "spinaci",
             "parmigiano"
         ]
@@ -2966,7 +2966,7 @@
             "pomodoro",
             "mozzarella",
             "patatine fritte",
-            "uova",
+            "uovo",
             "peperoni",
             "scamorza"
         ]
@@ -3330,11 +3330,11 @@
             queries = queries.map(query => query.toLowerCase().trim());
             const filteredPizzas = pizzas.filter(pizza => queries.every(query => pizza.toppings.some(topping => topping.toLowerCase().includes(query))));
             const resultsContainer = document.getElementById('results');
-            resultsContainer.innerHTML = filteredPizzas.slice(0, 50).map(pizza => 
+            resultsContainer.innerHTML = filteredPizzas.map(pizza => 
                 `<div class="p-4 mb-2 bg-white rounded shadow">
                     <h3 class="text-lg font-bold">${pizza.id} - ${pizza.name}</h3>
-                    <p>Type: ${pizza.type}</p>
-                    <p>Toppings: ${pizza.toppings.join(', ')}</p>
+                    <p><strong>${pizza.type}</strong></p>
+                    <p>${pizza.toppings.join(', ')}</p>
                 </div>`
             ).join('');
         }
