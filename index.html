@@ -1,0 +1,3343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Topping Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            cursor: pointer;
+        }
+        .dropdown-content div {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content div:hover {background-color: #f1f1f1}
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-start h-screen">
+    <div class="w-full max-w-3xl p-5 sticky top-0 bg-white">
+        <input type="text" id="toppingSearch" placeholder="Enter toppings (e.g., mozzarella, pomodoro)" class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <div id="autocomplete" class="dropdown-content"></div>
+    </div>
+    <div id="results" class="w-full max-w-3xl p-5 overflow-auto" style="height: 80%;">
+        <!-- Results will be displayed here -->
+    </div>
+    <script>
+        const pizzas = [
+    {
+        "type": "rossa",
+        "id": "1",
+        "name": "Rossa",
+        "toppings": [
+            "pomodoro"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "2",
+        "name": "Marinara",
+        "toppings": [
+            "pomodoro",
+            "aglio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "3",
+        "name": "Bianca",
+        "toppings": [
+            "mozzarella"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "4",
+        "name": "Margherita",
+        "toppings": [
+            "pomodoro",
+            "mozzarella"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "5",
+        "name": "Napoli",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "acciughe"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "6",
+        "name": "Romana",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "acciughe",
+            "capperi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "7",
+        "name": "Siciliana",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "acciughe",
+            "capperi",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "8",
+        "name": "Wurstel",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "wurstel"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "9",
+        "name": "Prosciutto",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "10",
+        "name": "Kawasaki",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "11",
+        "name": "Pugliese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "12",
+        "name": "Salame",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame dolce"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "13",
+        "name": "Scamorza",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "scamorza"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "14",
+        "name": "Zola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "15",
+        "name": "Frix",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patate fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "16",
+        "name": "4 Formaggi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "taleggio",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "17",
+        "name": "Tirolese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "speck"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "18",
+        "name": "Capricciosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "farcitura"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "19",
+        "name": "4 Stagioni",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "funghi",
+            "carciofi",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "20",
+        "name": "Prosciutto e Funghi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "funghi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "21",
+        "name": "Prosciutto e Wurstel",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "wurstel"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "22",
+        "name": "Ducati",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "23",
+        "name": "Salsiccia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salsiccia"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "24",
+        "name": "Tonno",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "25",
+        "name": "Asparagi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "26",
+        "name": "Funghi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "funghi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "27",
+        "name": "Braccio di Ferro",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "spinaci",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "28",
+        "name": "Delicata",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "29",
+        "name": "Contadina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "rucola",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "30",
+        "name": "Porcini",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "31",
+        "name": "Bresaola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "32",
+        "name": "Prosciutto Crudo",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "33",
+        "name": "Speck e Zola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "speck",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "34",
+        "name": "Mantovana",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patate al forno",
+            "salamella"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "35",
+        "name": "Yamaha",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pancetta",
+            "fagioli",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "36",
+        "name": "Affumicata",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "speck cotto al forno"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "37",
+        "name": "La Thuile",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "38",
+        "name": "Aloà Aloà",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "39",
+        "name": "Bacon",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pancetta cotta al forno",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "40",
+        "name": "Cagliata",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "mascarpone"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "41",
+        "name": "Sgommata",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patatine",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "42",
+        "name": "Spassosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "speck",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "43",
+        "name": "Salamina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame dolce",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "44",
+        "name": "Western",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "fagioli",
+            "tabasco",
+            "pancetta",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "45",
+        "name": "4 Salumi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame dolce",
+            "pancetta",
+            "speck",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "46",
+        "name": "Maretta",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "mozzarella di bufala"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "47",
+        "name": "Gran Turismo",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "speck",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "48",
+        "name": "Vonciona",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "scamorza",
+            "pancetta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "49",
+        "name": "Lisbona",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "50",
+        "name": "Panda",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "scamorza"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "51",
+        "name": "Zucchine",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zucchine grigliate"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "52",
+        "name": "Melanzane",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "melanzane grigliate"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "53",
+        "name": "Peperoni",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "peperoni grigliati"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "54",
+        "name": "Grigliata",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "verdure grigliate miste"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "55",
+        "name": "Frutti di Mare",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "frutti di mare"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "56",
+        "name": "Granchio",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "polpa di granchio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "57",
+        "name": "Balsamica",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "rucola",
+            "parmigiano",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "58",
+        "name": "Tomino e speck",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "speck"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "59",
+        "name": "Via Po 26",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "parmigiano",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "60",
+        "name": "Olivia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "wurstel",
+            "parmigiano",
+            "spinaci"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "61",
+        "name": "Graziosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salsiccia",
+            "zola",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "62",
+        "name": "Reggianina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pomodorini",
+            "rucola",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "63",
+        "name": "Valtellina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "funghi porcini",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "64",
+        "name": "|| Серро",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "bresaola",
+            "rucola",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "65",
+        "name": "Villana",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "66",
+        "name": "13 Luglio",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto crudo di Parma",
+            "ricotta",
+            "olio piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "67",
+        "name": "Bismark",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto crudo di Parma",
+            "uovo",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "68",
+        "name": "Sella Ronda",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pancetta cotta al forno",
+            "funghi",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "69",
+        "name": "Nolan",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "peperoni"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "70",
+        "name": "Honda",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "salame piccante",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "71",
+        "name": "Aprilia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patatine fritte",
+            "prosciutto cotto",
+            "wurstel"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "72",
+        "name": "Canadese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "wurstel",
+            "salsiccia",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "73",
+        "name": "Egizia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "cipolla",
+            "salame piccante",
+            "aglio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "74",
+        "name": "Cosacco",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "olive",
+            "salsiccia"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "75",
+        "name": "Carrera",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "pomodorini",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "76",
+        "name": "Land Cruise",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "salame dolce",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "77",
+        "name": "Tirolo",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patate al forno",
+            "speck",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "78",
+        "name": "Bresaolina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "bresaola",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "79",
+        "name": "Mao Mao",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "pancetta",
+            "patate al forno"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "80",
+        "name": "Lady",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "speck cotto al forno",
+            "patatine",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "81",
+        "name": "Alicante",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "cipolle",
+            "tonno",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "82",
+        "name": "Lamborghini",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zucchine",
+            "prosciutto cotto",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "83",
+        "name": "Tiguan",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "84",
+        "name": "Mezza Via",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "salamino piccante",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "85",
+        "name": "Granaia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tacchino",
+            "uovo",
+            "trevisana"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "86",
+        "name": "Nanni",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "melanzane",
+            "zucchine",
+            "zola",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "87",
+        "name": "Zia Rossi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tacchino",
+            "patatine fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "88",
+        "name": "Stradella",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "parmigiano",
+            "salamino piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "89",
+        "name": "Modena",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tacchino",
+            "pomodorini",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "90",
+        "name": "Pianzo",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tacchino",
+            "zola",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "91",
+        "name": "Canossa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pancetta",
+            "uovo",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "92",
+        "name": "V-Power",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pancetta",
+            "uovo",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "93",
+        "name": "Udine",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "mascarpone",
+            "speck",
+            "noci"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "94",
+        "name": "Cervino",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "mascarpone",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "95",
+        "name": "Salmone",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salmone"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "96",
+        "name": "Gaina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "taleggio",
+            "parmigiano",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "97",
+        "name": "Canazei",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "spinaci",
+            "salsiccia",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "98",
+        "name": "Cleo",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "speck",
+            "trevisana"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "99",
+        "name": "Saetta",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "speck",
+            "carciofi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "100",
+        "name": "Black",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "speck",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "101",
+        "name": "Pinko",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "salame dolce",
+            "cipolla"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "102",
+        "name": "Norvegese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "panna",
+            "salmone"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "103",
+        "name": "Gamberetti e Rucola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "104",
+        "name": "Grigna",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "panna",
+            "lardo"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "105",
+        "name": "Lucca",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "peperoni",
+            "prosciutto cotto",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "106",
+        "name": "Cervia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto crudo di Parma",
+            "panna",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "107",
+        "name": "Monviso",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "prosciutto crudo",
+            "mascarpone"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "108",
+        "name": "Corvette",
+        "toppings": [
+            "pomodoro",
+            "mozzarella di bufala",
+            "patate al forno",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "109",
+        "name": "Giardinetta",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "prosciutto cotto",
+            "patate al forno",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "110",
+        "name": "New York",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "melanzane",
+            "pomodorini",
+            "parmigiano",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "111",
+        "name": "Intrigante",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "scamorza",
+            "spinaci"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "112",
+        "name": "Faidello",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto crudo",
+            "zola",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "113",
+        "name": "Saporita",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "porcini",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "114",
+        "name": "Boscaiola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "rucola",
+            "porcini",
+            "parmigiano",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "115",
+        "name": "Mari e Monti",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "funghi",
+            "gamberetti",
+            "prezzemolo"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "116",
+        "name": "St. Mauritz",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "spinaci",
+            "parmigiano",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "117",
+        "name": "Mamma Sculacciami",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "cipolle",
+            "fagioli",
+            "salame piccante",
+            "peperoni",
+            "speck"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "118",
+        "name": "Pizza & Vai",
+        "toppings": [
+            "pomodoro",
+            "mozzarella di bufala",
+            "patate al forno",
+            "speck"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "119",
+        "name": "Suzuki",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "speck",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "120",
+        "name": "Sclerotica",
+        "toppings": [
+            "come vuole il pizzaiolo"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "121",
+        "name": "Chamonix",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "speck",
+            "scamorza",
+            "trevisana"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "122",
+        "name": "Bellaria",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno",
+            "asparagi",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "123",
+        "name": "Erbonne",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "patate al forno",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "124",
+        "name": "Valmalenco",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salsiccia",
+            "zola",
+            "trevisana"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "125",
+        "name": "Bandiera",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "bresaola cotta",
+            "ricotta",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "126",
+        "name": "Norvegese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "panna",
+            "salmone"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "127",
+        "name": "Pizza del Crotto",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "bresaola",
+            "speck",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "128",
+        "name": "BMW",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patate al forno",
+            "taleggio",
+            "bresaola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "129",
+        "name": "Maialina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "wurstel",
+            "salsiccia",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "130",
+        "name": "Sfiziosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "ricotta",
+            "olio piccante",
+            "patate fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "131",
+        "name": "Esse Esse",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "salame piccante",
+            "cipolle",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "132",
+        "name": "Milano",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame cotto al forno",
+            "asparagi",
+            "panna",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "133",
+        "name": "Fumè",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "scamorza",
+            "prosciutto cotto",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "134",
+        "name": "Bomba",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "wurstel",
+            "uovo",
+            "capriccio",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "135",
+        "name": "T-Max",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno",
+            "uovo",
+            "wurstel",
+            "patatine fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "136",
+        "name": "Cocò",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "peperoni",
+            "salame piccante",
+            "wurstel",
+            "uovo",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "137",
+        "name": "Club",
+        "toppings": [
+            "pomodoro",
+            "mozzarella di bufala",
+            "salsiccia"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "138",
+        "name": "Cambio Corsa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "cipolle",
+            "zola",
+            "patate al forno",
+            "speck"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "139",
+        "name": "Salsicciona",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "peperoni",
+            "salsiccia",
+            "tabasco"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "140",
+        "name": "Baz",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "rucola",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "141",
+        "name": "Smart",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "panna",
+            "patate al forno",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "142",
+        "name": "Cinghialetta",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "speck cotto al forno",
+            "taleggio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "143",
+        "name": "Zucchetta",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zucchine",
+            "brie",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "144",
+        "name": "Sestina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "taleggio",
+            "parmigiano",
+            "scamorza",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "145",
+        "name": "Como",
+        "toppings": [
+            "pomodoro",
+            "mozzarella di bufala",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "146",
+        "name": "Ventolina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "fagioli",
+            "cipolla",
+            "salsiccia",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "147",
+        "name": "Villa Guardia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "uovo",
+            "pancetta al forno",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "148",
+        "name": "Gustosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tacchino",
+            "peperoni",
+            "brie"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "149",
+        "name": "Berna",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "pomodorini",
+            "salsiccia"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "150",
+        "name": "Striscia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "rucola",
+            "patatine fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "151",
+        "name": "Speed-Way",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "noci",
+            "speck",
+            "brie",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "152",
+        "name": "Montale",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "parmigiano",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "153",
+        "name": "Mesedozz",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "salamepiccante",
+            "peperoni",
+            "porcini",
+            "grana",
+            "capperi"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "154",
+        "name": "San Polo",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "mascarpone",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "155",
+        "name": "Fabbrì",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "peperoni",
+            "pancetta",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "156",
+        "name": "Atomica",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salsiccia",
+            "cipolle",
+            "fagioli",
+            "uovo"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "157",
+        "name": "Bormio",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salsiccia",
+            "cipolle",
+            "melanzanre",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "158",
+        "name": "San Quintino",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame cotto al forno",
+            "mascarpone",
+            "rucola",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "159",
+        "name": "Campiglio",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "scamorza",
+            "pancetta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "160",
+        "name": "Bollettone",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pancetta cotta al forno",
+            "zola",
+            "trevisana",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "161",
+        "name": "Sorrento",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "peperoni",
+            "jalapeio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "162",
+        "name": "Parma",
+        "toppings": [
+            "pomodoro",
+            "mozzarella di bufala",
+            "parmigiano",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "163",
+        "name": "Porsche",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "uovo",
+            "gamberetti",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "164",
+        "name": "David",
+        "toppings": [
+            "pomodoro",
+            "mozzarella di bufala",
+            "prosciutto cotto",
+            "salame piccante"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "165",
+        "name": "Venezia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "zola",
+            "salame piccante",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "166",
+        "name": "Conte",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "salame piccante",
+            "cipolle",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "167",
+        "name": "Carlone",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "bufala",
+            "uovo",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "168",
+        "name": "Trinità",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "pomodorini",
+            "porcini",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "169",
+        "name": "Raghetto",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "bresaola cotta",
+            "salame piccante",
+            "wurstel",
+            "prosciutto cotto",
+            "peperoni",
+            "fagioli"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "170",
+        "name": "Piemontese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "salsiccia",
+            "peperoni",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "171",
+        "name": "Ischia",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "mozzarella di bufala",
+            "carciofi",
+            "rucola",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "172",
+        "name": "Squisita",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "rucola",
+            "parmigiano",
+            "crudo di Parma",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "173",
+        "name": "Monte Bianco",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "funghi",
+            "mascarpone",
+            "porcini",
+            "provola",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "174",
+        "name": "Alpina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salsiccia",
+            "porcini",
+            "trevisana",
+            "fagioli",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "175",
+        "name": "Pierre",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "peperoni",
+            "salame piccante",
+            "capperi",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "176",
+        "name": "Arabba",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "funghi",
+            "mozzarella di bufala",
+            "speck",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "177",
+        "name": "Monte Rosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "parmigiano",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "178",
+        "name": "Nettuno new",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "granchio",
+            "gamberetti",
+            "mais",
+            "rucola",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "179",
+        "name": "Americana",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "mais",
+            "olive",
+            "prosciutto cotto",
+            "wurstel",
+            "salsiccia"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "180",
+        "name": "Delta - Ride",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "wurstel",
+            "peperoni",
+            "patate al forno",
+            "tacchino",
+            "patate fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "181",
+        "name": "Everest",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "prosciutto",
+            "peperoni",
+            "zola",
+            "patate al forno",
+            "wurstel",
+            "salame piccante",
+            "patate fritte"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "182",
+        "name": "Magnifica",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tomino",
+            "crudo di Parma",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "183",
+        "name": "C-Max",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "2 uova",
+            "peperoni",
+            "zola",
+            "acciughe",
+            "pomodoro",
+            "mozzarella",
+            "capriccio",
+            "prosciutto cotto",
+            "taleggio",
+            "capperi"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "184",
+        "name": "Carpineti",
+        "toppings": [
+            "mozzarella",
+            "lardo"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "185",
+        "name": "Minù new",
+        "toppings": [
+            "mozzarella",
+            "radicchio",
+            "prosciutto cotto",
+            "glassa di aceto balsamico"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "186",
+        "name": "Ghisallo",
+        "toppings": [
+            "mozzarella",
+            "lardo",
+            "carciofi"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "187",
+        "name": "Capitano",
+        "toppings": [
+            "mozzarella",
+            "taleggio",
+            "patate al forno"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "188",
+        "name": "Nonna Bis",
+        "toppings": [
+            "mozzarella",
+            "taleggio",
+            "porcini"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "189",
+        "name": "Zola e noci",
+        "toppings": [
+            "mozzarella",
+            "zola",
+            "noci"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "190",
+        "name": "Via Marconi",
+        "toppings": [
+            "mozzarella",
+            "prosciutto cotto",
+            "porcini"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "191",
+        "name": "Albenga",
+        "toppings": [
+            "mozzarella",
+            "pesto",
+            "speck"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "192",
+        "name": "Tricolore",
+        "toppings": [
+            "mozzarella",
+            "spinaci",
+            "peperoni"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "193",
+        "name": "Palanzone",
+        "toppings": [
+            "mozzarella",
+            "mascarpone",
+            "trevisana",
+            "zola"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "194",
+        "name": "Albareto",
+        "toppings": [
+            "mozzarella",
+            "funghi",
+            "speck",
+            "mais"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "195",
+        "name": "Brunate",
+        "toppings": [
+            "mozzarella",
+            "funghi",
+            "salsiccia",
+            "brie"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "196",
+        "name": "Madrid",
+        "toppings": [
+            "mozzarella",
+            "salame dolce",
+            "ricotta",
+            "rucola"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "197",
+        "name": "500",
+        "toppings": [
+            "mozzarella",
+            "brie",
+            "porcini",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "198",
+        "name": "Parigi",
+        "toppings": [
+            "mozzarella",
+            "pancetta cotta al forno",
+            "asparagi",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "199",
+        "name": "Marchino",
+        "toppings": [
+            "mozzarella",
+            "pomodorini",
+            "parmigiano",
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "200",
+        "name": "Il Peccato",
+        "toppings": [
+            "mozzarella",
+            "speck cotto al forno",
+            "prosciutto cotto",
+            "patate al forno",
+            "cipolle"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "201",
+        "name": "Selvapiana",
+        "toppings": [
+            "mozzarella",
+            "mascarpone",
+            "verdure grigliate",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "202",
+        "name": "Pietranera",
+        "toppings": [
+            "mozzarella",
+            "zucchine",
+            "patate al forno",
+            "zola",
+            "carciofi",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "203",
+        "name": "Pablito new",
+        "toppings": [
+            "mozzarella",
+            "zucchine grigliate",
+            "salame piccante",
+            "parmigiano reggiano in cottura"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "204",
+        "name": "Traversetolo",
+        "toppings": [
+            "mozzarella",
+            "mascarpone",
+            "pomodorini",
+            "salame piccante",
+            "rucola"
+        ]
+    },
+    {
+        "type": "bianca",
+        "id": "205",
+        "name": "Ross",
+        "toppings": [
+            "mozzarella",
+            "pomodorini",
+            "cipolla",
+            "brie",
+            "porcini",
+            "salsiccia",
+            "panna",
+            "insalata"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "206",
+        "name": "Cinque Terre",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno",
+            "pesto"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "207",
+        "name": "Treviso",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "tonno"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "208",
+        "name": "Miramao",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "gamberetti"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "209",
+        "name": "Siena",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "granchio",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "210",
+        "name": "Pantera Rosa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "mais"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "211",
+        "name": "Titanic",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno",
+            "cipolle",
+            "olive nere",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "212",
+        "name": "Veliero",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "frutti di mare",
+            "tonno",
+            "acciughe"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "213",
+        "name": "MV",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "panna",
+            "salmone"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "214",
+        "name": "Re Salomone",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salmone",
+            "gamberetti",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "215",
+        "name": "Harley",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "polpa di granchio",
+            "panna",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "216",
+        "name": "Granchietto",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "ricotta",
+            "granchio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "217",
+        "name": "Touareg",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "tonno",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "218",
+        "name": "Igea",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "brie",
+            "gamberetti",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "219",
+        "name": "Speciale",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "zucchine",
+            "pomodorini",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "220",
+        "name": "Carlone",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "mozzarella di bufala",
+            "uovo",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "221",
+        "name": "Rimini",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "olive",
+            "pesto",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "222",
+        "name": "Capri",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "granchio",
+            "rucola",
+            "pomodorini",
+            "salsa rosa"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "223",
+        "name": "Ferrari",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tonno",
+            "gamberetti",
+            "salmone",
+            "polpa di granchio"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "224",
+        "name": "Marileva",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "salmone",
+            "speck",
+            "insalata"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "225",
+        "name": "Regina",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "salmone",
+            "mozzarella di bufala"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "226",
+        "name": "Fuoco",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "jalapeno"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "227",
+        "name": "Raggera",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "228",
+        "name": "Puma",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "cipolle",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "229",
+        "name": "Varazze",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "patate al forno"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "230",
+        "name": "Genovese",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "231",
+        "name": "Ovaiola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "uovo"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "232",
+        "name": "Parmigiana",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "melanzane",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "233",
+        "name": "Laax",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "pomodorini",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "234",
+        "name": "Agricola",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "spinaci",
+            "patate al forno",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "235",
+        "name": "Camerun",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patate al forno",
+            "pomodorini",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "236",
+        "name": "297",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "scamorza",
+            "zucchine grigliate"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "237",
+        "name": "Previa",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "olive",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "238",
+        "name": "Bugatti",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "cipolle",
+            "parmigiano",
+            "patate al forno",
+            "panna"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "239",
+        "name": "Nanni",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "melanzane",
+            "zucchine",
+            "zola",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "240",
+        "name": "Resegone",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pomodorini",
+            "ricotta",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "241",
+        "name": "Bergeggi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "zucchine",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "242",
+        "name": "Savona",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "pomodorini",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "243",
+        "name": "Positano",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "mozzarella di bufala",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "244",
+        "name": "Livigno",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "asparagi",
+            "noci",
+            "zola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "245",
+        "name": "New York",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "melanzane",
+            "pomodorini",
+            "parmigiano",
+            "olive"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "246",
+        "name": "Tegame",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "uova",
+            "spinaci",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "247",
+        "name": "Maserati",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "uovo",
+            "zola",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "248",
+        "name": "Lotus",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "capperi",
+            "pomodorini",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "249",
+        "name": "Vienna",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "panna",
+            "porcini"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "250",
+        "name": "Ninja",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "patatine fritte",
+            "uova",
+            "peperoni",
+            "scamorza"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "251",
+        "name": "Barzaghino",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "funghi",
+            "melanzane",
+            "carciofi",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "252",
+        "name": "Do-svidania",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "carciofi",
+            "funghi",
+            "parmigiano",
+            "porcini",
+            "mozzarella di bufala",
+            "rucola"
+        ]
+    },
+    {
+        "type": "rossa",
+        "id": "253",
+        "name": "Pampeago",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "trevisana",
+            "porcini",
+            "provola",
+            "parmiaiano"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "254",
+        "name": "Liscio",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "255",
+        "name": "Spinacio",
+        "toppings": [
+            "mozzarella",
+            "ricotta",
+            "spinaci"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "256",
+        "name": "Farcito",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "prosciutto cotto",
+            "farcitura"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "257",
+        "name": "4 formaggi",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "taleggio",
+            "parmigiano"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "258",
+        "name": "Marino",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "misto mare"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "259",
+        "name": "Smorto",
+        "toppings": [
+            "mozzarella",
+            "prosciutto cotto",
+            "zucchine",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "260",
+        "name": "Saporito",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "porcini",
+            "salsiccia",
+            "zola"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "261",
+        "name": "Picanto",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salame piccante",
+            "fagioli",
+            "peperoni",
+            "tabasco"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "262",
+        "name": "Gustoso",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "taleggio",
+            "speck"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "263",
+        "name": "Casasco",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "verdure grigliate"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "264",
+        "name": "Profumo di Mare",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "gamberetti",
+            "tonno",
+            "cipolle",
+            "brie"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "265",
+        "name": "Bordighera",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "pesto",
+            "porcini",
+            "speck"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "266",
+        "name": "Pregiato",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "tacchino",
+            "noci",
+            "brie",
+            "ricotta"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "267",
+        "name": "Maranello",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "taleggio",
+            "parmigiano",
+            "scamorza",
+            "brie"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "268",
+        "name": "Grotta Azzurra",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "salmone",
+            "polpa di granchio",
+            "panna",
+            "gamberetti"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "269",
+        "name": "Mexicano",
+        "toppings": [
+            "pomodoro",
+            "mozzarella",
+            "zola",
+            "salame piccante",
+            "jalapeno",
+            "peperoni"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "270",
+        "name": "Emilia",
+        "toppings": [
+            "mozzarella",
+            "brie",
+            "pomodorini",
+            "all'esterno crudo di Parma e rucola"
+        ]
+    },
+    {
+        "type": "calzone",
+        "id": "271",
+        "name": "Tremezzo",
+        "toppings": [
+            "mozzarella",
+            "mascarpone",
+            "zola",
+            "patate al forno",
+            "pomodorini"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "272",
+        "name": "Liscia",
+        "toppings": [
+            "sale",
+            "olio",
+            "origano"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "273",
+        "name": "Farcita",
+        "toppings": [
+            "farcitura"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "274",
+        "name": "Crudo",
+        "toppings": [
+            "prosciutto crudo di Parma"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "275",
+        "name": "Nutellosa",
+        "toppings": [
+            "nutella"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "276",
+        "name": "Courmayeur",
+        "toppings": [
+            "lardo"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "277",
+        "name": "Verdure Grigliate",
+        "toppings": [
+            "verdure grigliate"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "278",
+        "name": "Caprese",
+        "toppings": [
+            "dopo cottura mozzarella a fette",
+            "pomodorini",
+            "origano"
+        ]
+    },
+    {
+        "type": "focaccia",
+        "id": "279",
+        "name": "Lory",
+        "toppings": [
+            "insalata",
+            "pomodorini",
+            "mozzarella a fette",
+            "tonno",
+            "salsa yogurt"
+        ]
+    },
+];
+
+        // Collecting all unique toppings for autocomplete
+        const toppings = [...new Set(pizzas.reduce((acc, pizza) => acc.concat(pizza.toppings), []))];
+
+        document.getElementById('toppingSearch').addEventListener('input', function(e) {
+            const searchQuery = e.target.value.toLowerCase();
+            const autocompleteDiv = document.getElementById('autocomplete');
+            if (searchQuery) {
+                autocompleteDiv.style.display = 'block';
+                const filteredToppings = toppings.filter(topping => topping.toLowerCase().includes(searchQuery.split(', ').join('')));
+                autocompleteDiv.innerHTML = filteredToppings.map(topping => 
+                    `<div onclick="selectTopping('${topping}')">${topping}</div>`
+                ).join('');
+            } else {
+                autocompleteDiv.style.display = 'none';
+            }
+            filterPizzas(searchQuery.split(', '));
+        });
+
+        function selectTopping(topping) {
+            const input = document.getElementById('toppingSearch');
+            const current = input.value.split(', ').filter(t => t.trim() !== '');
+            if (!current.includes(topping)) {
+                current.push(topping);
+                input.value = current.join(', ');
+            }
+            document.getElementById('autocomplete').style.display = 'none';
+            filterPizzas(input.value.split(', '));
+        }
+
+        function filterPizzas(queries) {
+            queries = queries.map(query => query.toLowerCase().trim());
+            const filteredPizzas = pizzas.filter(pizza => queries.every(query => pizza.toppings.some(topping => topping.toLowerCase().includes(query))));
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = filteredPizzas.slice(0, 50).map(pizza => 
+                `<div class="p-4 mb-2 bg-white rounded shadow">
+                    <h3 class="text-lg font-bold">${pizza.name}</h3>
+                    <p>Type: ${pizza.type}</p>
+                    <p>Toppings: ${pizza.toppings.join(', ')}</p>
+                </div>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
