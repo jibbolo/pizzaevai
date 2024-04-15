@@ -2028,7 +2028,7 @@
             "mozzarella",
             "rucola",
             "parmigiano",
-            "crudo di Parma",
+            "prosciutto crudo di Parma",
             "glassa di aceto balsamico"
         ]
     },
@@ -2167,7 +2167,7 @@
             "pomodoro",
             "mozzarella",
             "tomino",
-            "crudo di Parma",
+            "prosciutto crudo di Parma",
             "glassa di aceto balsamico"
         ]
     },
@@ -3332,7 +3332,7 @@
             const resultsContainer = document.getElementById('results');
             resultsContainer.innerHTML = filteredPizzas.slice(0, 50).map(pizza => 
                 `<div class="p-4 mb-2 bg-white rounded shadow">
-                    <h3 class="text-lg font-bold">${pizza.name}</h3>
+                    <h3 class="text-lg font-bold">${pizza.id} - ${pizza.name}</h3>
                     <p>Type: ${pizza.type}</p>
                     <p>Toppings: ${pizza.toppings.join(', ')}</p>
                 </div>`
